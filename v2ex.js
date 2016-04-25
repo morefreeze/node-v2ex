@@ -1,6 +1,5 @@
 var superagent = require('superagent'),
   cheerio = require('cheerio'),
-  mail = require('./mail'),
   loginUrl = 'http://v2ex.com/signin',
   baseUrl = 'http://v2ex.com',
   dairyMissionUrl = 'http://v2ex.com/mission/daily',
@@ -40,14 +39,8 @@ v2ex.prototype = {
   init: function() {
     var that = this;
     that.getFuli(function(msg) {
-      var mailText = "[" + that.account.u + "]" + msg + new Date();
-      mail.sendMail(mailText, mailText, function(error, response) {
-        if (error) {
-          console.log(error + "邮件发送失败");
-          return
-        }
-        console.log("成功");
-      });
+      var succText = "[" + that.account.u + "]" + msg + new Date();
+      console.log(succText);
     });
   },
 
@@ -65,6 +58,10 @@ v2ex.prototype = {
       .set(headers)
       .end(function(err, res) {
         $ = cheerio.load(res.text);
+        user = res.text.match(/<input type="text" class="sl" name="([0-9a-f]+)"/)[1];
+        pass = res.text.match(/<input type="password" class="sl" name="([0-9a-f]+)"/)[1];
+        that.account[user] = that.account['u'];
+        that.account[pass] = that.account['p'];
         var iptonce = $('input');
         that.account.once = iptonce[3].attribs.value;
         var setPreCookie = res.headers['set-cookie'];
